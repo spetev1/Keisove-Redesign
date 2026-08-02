@@ -1,0 +1,258 @@
+@import 'tailwindcss';
+
+@import 'tw-animate-css';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+/*
+  A `.theme-light` subtree opts out of dark mode entirely - not just the custom
+  properties but the `dark:` utilities too, which would otherwise still match
+  because the `dark` class stays on <html>.
+*/
+@custom-variant dark (&:is(.dark *):not(.theme-light *));
+
+@theme inline {
+    --font-sans:
+        Instrument Sans, ui-sans-serif, system-ui, sans-serif,
+        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+        'Noto Color Emoji';
+
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    /*
+      Keisove brand tokens. These sit alongside the shadcn palette rather than
+      replacing it: `primary` already carries the brand violet, and these cover
+      the few surfaces the storefront needs that the base palette has no name
+      for - the tinted headline, the lavender section panels, the near-black
+      hero, and the green "НОВО" badge.
+    */
+    --color-brand-highlight: var(--brand-highlight);
+    --color-brand-highlight-soft: var(--brand-highlight-soft);
+    --color-brand-surface: var(--brand-surface);
+    --color-brand-surface-strong: var(--brand-surface-strong);
+    --color-brand-ink: var(--brand-ink);
+    --color-brand-ink-foreground: var(--brand-ink-foreground);
+    --color-success: var(--success);
+    --color-success-foreground: var(--success-foreground);
+
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+
+    --color-sidebar: var(--sidebar-background);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentColor);
+    }
+}
+
+/*
+  The announcement bar loops by translating a track of identical copies far
+  enough to land on the next one, which is one copy's width. How much of the
+  track that is depends on how many copies were needed to cover the screen, so
+  the bar measures itself and sets `--marquee-shift`; the fallback here is the
+  two-copy case. The duration covers that one copy either way, so the messages
+  travel at the same speed however many copies there are.
+*/
+@theme {
+    --animate-marquee: marquee 45s linear infinite;
+
+    @keyframes marquee {
+        from {
+            transform: translateX(0);
+        }
+
+        to {
+            transform: translateX(var(--marquee-shift, -50%));
+        }
+    }
+}
+
+/*
+  Horizontal product carousels scroll by drag and by arrow button; the native
+  scrollbar underneath them is noise the design does not have.
+*/
+@utility scrollbar-none {
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+@layer utilities {
+    body,
+    html {
+        --font-sans:
+            'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
+            'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+            'Noto Color Emoji';
+    }
+}
+
+/*
+  `.theme-light` carries the same values as `:root` so a subtree can opt out of
+  the dark class on <html>. The storefront uses it: the approved design is a
+  light page, and a client opening the demo link on a dark-themed machine should
+  still see the design that was signed off.
+*/
+:root,
+.theme-light {
+    color-scheme: light;
+    --background: hsl(0 0% 100%);
+    --foreground: hsl(264 16% 11%);
+    --card: hsl(0 0% 100%);
+    --card-foreground: hsl(264 16% 11%);
+    --popover: hsl(0 0% 100%);
+    --popover-foreground: hsl(264 16% 11%);
+    --primary: hsl(267 71% 52%);
+    --primary-foreground: hsl(0 0% 100%);
+    --secondary: hsl(267 52% 96%);
+    --secondary-foreground: hsl(267 46% 28%);
+    --muted: hsl(266 30% 96.5%);
+    --muted-foreground: hsl(262 9% 46%);
+    --accent: hsl(267 52% 96%);
+    --accent-foreground: hsl(267 46% 28%);
+    --destructive: hsl(0 84.2% 60.2%);
+    --destructive-foreground: hsl(0 0% 98%);
+    --border: hsl(265 22% 91%);
+    --input: hsl(265 22% 89%);
+    --ring: hsl(267 71% 52%);
+    --brand-highlight: hsl(272 87% 68%);
+    /*
+      A washed-out `brand-highlight`, light enough to read as a light source
+      rather than as a colour. The hero button's travelling streak is what
+      needs it; on a surface it would be too pale to hold anything.
+    */
+    --brand-highlight-soft: hsl(272 95% 86%);
+    --brand-surface: hsl(268 54% 97%);
+    /* A deeper lavender for panels that sit on top of `brand-surface`. */
+    --brand-surface-strong: hsl(268 48% 93%);
+    --brand-ink: hsl(266 24% 9%);
+    --brand-ink-foreground: hsl(0 0% 100%);
+    --success: hsl(145 63% 40%);
+    --success-foreground: hsl(0 0% 100%);
+    --chart-1: hsl(267 71% 52%);
+    --chart-2: hsl(272 87% 68%);
+    --chart-3: hsl(285 60% 45%);
+    --chart-4: hsl(43 74% 66%);
+    --chart-5: hsl(145 63% 40%);
+    --radius: 0.75rem;
+    --sidebar-background: hsl(0 0% 98%);
+    --sidebar-foreground: hsl(240 5.3% 26.1%);
+    --sidebar-primary: hsl(0 0% 10%);
+    --sidebar-primary-foreground: hsl(0 0% 98%);
+    --sidebar-accent: hsl(0 0% 94%);
+    --sidebar-accent-foreground: hsl(0 0% 30%);
+    --sidebar-border: hsl(0 0% 91%);
+    --sidebar-ring: hsl(217.2 91.2% 59.8%);
+    --sidebar: hsl(0 0% 98%);
+}
+
+.dark {
+    color-scheme: dark;
+    --background: hsl(266 20% 7%);
+    --foreground: hsl(0 0% 98%);
+    --card: hsl(266 18% 10%);
+    --card-foreground: hsl(0 0% 98%);
+    --popover: hsl(266 18% 10%);
+    --popover-foreground: hsl(0 0% 98%);
+    --primary: hsl(270 80% 62%);
+    --primary-foreground: hsl(0 0% 100%);
+    --secondary: hsl(266 16% 16%);
+    --secondary-foreground: hsl(0 0% 98%);
+    --muted: hsl(266 14% 17%);
+    --muted-foreground: hsl(263 12% 66%);
+    --accent: hsl(266 16% 16%);
+    --accent-foreground: hsl(0 0% 98%);
+    --destructive: hsl(0 84% 60%);
+    --destructive-foreground: hsl(0 0% 98%);
+    --border: hsl(266 14% 18%);
+    --input: hsl(266 14% 18%);
+    --ring: hsl(270 80% 62%);
+    --brand-highlight: hsl(272 90% 74%);
+    --brand-highlight-soft: hsl(272 92% 88%);
+    --brand-surface: hsl(266 18% 13%);
+    --brand-surface-strong: hsl(266 18% 17%);
+    --brand-ink: hsl(266 24% 6%);
+    --brand-ink-foreground: hsl(0 0% 100%);
+    --success: hsl(145 55% 48%);
+    --success-foreground: hsl(0 0% 100%);
+    --chart-1: hsl(270 80% 62%);
+    --chart-2: hsl(272 90% 74%);
+    --chart-3: hsl(285 60% 58%);
+    --chart-4: hsl(43 74% 66%);
+    --chart-5: hsl(145 55% 48%);
+    --sidebar-background: hsl(0 0% 7%);
+    --sidebar-foreground: hsl(0 0% 95.9%);
+    --sidebar-primary: hsl(360, 100%, 100%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-accent: hsl(0 0% 15.9%);
+    --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
+    --sidebar-border: hsl(0 0% 15.9%);
+    --sidebar-ring: hsl(217.2 91.2% 59.8%);
+    --sidebar: hsl(240 5.9% 10%);
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+}
