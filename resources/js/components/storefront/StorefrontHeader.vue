@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { Heart, Menu, ShoppingCart } from '@lucide/vue';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import AccountMenu from '@/components/storefront/AccountMenu.vue';
 import BrandWordmark from '@/components/storefront/BrandWordmark.vue';
 import CategoryMenu from '@/components/storefront/CategoryMenu.vue';
@@ -40,6 +40,18 @@ const storefrontCategories = computed(
 );
 
 /**
+ * The sheet is held open here rather than left to itself, because nothing else
+ * would ever close it: every storefront page resolves to the same layout, so
+ * Inertia keeps this header mounted across a visit and a sheet opened on one
+ * page is still open on the next.
+ */
+const isMobileMenuOpen = ref(false);
+
+function closeMobileMenu(): void {
+    isMobileMenuOpen.value = false;
+}
+
+/**
  * The field keeps the term after the visit rather than resetting, so a search
  * that missed can be narrowed without typing it out again.
  */
@@ -61,7 +73,7 @@ function runSearch(term: string): void {
         <StorefrontContainer
             class="flex h-16 items-center gap-2 sm:gap-4 lg:gap-6"
         >
-            <Sheet>
+            <Sheet v-model:open="isMobileMenuOpen">
                 <SheetTrigger as-child>
                     <Button
                         variant="ghost"
@@ -88,11 +100,19 @@ function runSearch(term: string): void {
                         >
                             Категории
                         </p>
+                        <!--
+                            Closed on the way out rather than on arrival: the
+                            department tapped is often the one already open, and
+                            Inertia treats that as a visit like any other, so
+                            waiting for the page to change would leave the sheet
+                            standing over the page it was asked to leave.
+                        -->
                         <Link
                             v-for="category in storefrontCategories"
                             :key="category.id"
                             :href="categoryHref(category.slug)"
                             class="rounded-md px-3 py-2 text-base font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                            @click="closeMobileMenu"
                         >
                             {{ category.name }}
                         </Link>
@@ -104,6 +124,7 @@ function runSearch(term: string): void {
                             :key="link.title"
                             :href="link.href"
                             class="rounded-md px-3 py-2 text-base font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                            @click="closeMobileMenu"
                         >
                             {{ link.title }}
                         </StorefrontNavLink>

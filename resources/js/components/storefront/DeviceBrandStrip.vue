@@ -118,10 +118,17 @@ const DEFAULT_MARK_SIZE = 28;
  * The two that need it are drawn larger *within* the slot rather than being
  * given a larger slot - the slots have to stay one size, or a taller one
  * centres its own contents and drops its name below the rest of the row.
+ *
+ * The sizes above are what a mark is drawn at on a full-width row; narrow
+ * screens run all four slots in a fraction of that width, so the element sets
+ * `--mark-scale` in its class and every mark shrinks by the same proportion.
+ * Scaling here rather than listing a second set of sizes keeps the relationship
+ * between the marks - Samsung stays the wider one - at any width.
  */
 function markStyle(family: DeviceBrand): CSSProperties {
     const size = MARK_SIZES[family.value] ?? DEFAULT_MARK_SIZE;
-    const mask = `url(/images/brands/${family.value}.svg) center / ${size}px ${size}px no-repeat`;
+    const drawn = `calc(${size}px * var(--mark-scale, 1))`;
+    const mask = `url(/images/brands/${family.value}.svg) center / ${drawn} ${drawn} no-repeat`;
 
     return { mask, WebkitMask: mask };
 }
@@ -132,29 +139,37 @@ function markStyle(family: DeviceBrand): CSSProperties {
         class="border-t border-white/10 bg-brand-ink text-brand-ink-foreground"
     >
         <StorefrontContainer
-            class="flex flex-col gap-4 py-3 sm:flex-row sm:items-center sm:gap-10"
+            class="flex flex-col gap-2 py-2.5 sm:flex-row sm:items-center sm:gap-10 sm:py-2"
         >
             <p
-                class="shrink-0 text-xs font-semibold tracking-wide text-white/55 uppercase"
+                class="shrink-0 text-[11px] font-semibold tracking-wide text-white/55 uppercase sm:text-xs"
             >
                 {{ label }}
             </p>
 
             <!-- Hovering holds the row still, which is the only way to read a
                  handset that is about to hand over. -->
+            <!--
+                Four across at every width. Stacking them two by two on a phone
+                doubled the band's height for the same four handsets, and pushed
+                the products below it off the fold.
+            -->
             <ul
-                class="grid flex-1 grid-cols-2 items-center gap-y-4 sm:grid-cols-4"
+                class="grid flex-1 grid-cols-4 items-center"
                 @mouseenter="isPaused = true"
                 @mouseleave="isPaused = false"
             >
                 <!--
                     A fixed height, so a slot taking a taller mark than the one
-                    it replaces cannot shove the row about mid-handover.
+                    it replaces cannot shove the row about mid-handover. It is
+                    cut to what a mark and its name come to and no more, so the
+                    band's height is these two numbers and its padding - there
+                    is no slack in here to take out.
                 -->
                 <li
                     v-for="(family, slot) in slots"
                     :key="slot"
-                    class="flex h-15 items-center justify-center"
+                    class="flex h-12 items-center justify-center sm:h-13"
                 >
                     <!--
                         Keyed on the handset rather than the slot, so replacing
@@ -181,12 +196,15 @@ function markStyle(family: DeviceBrand): CSSProperties {
                             class="flex flex-col items-center gap-1"
                         >
                             <span
-                                class="block h-11 w-full bg-white/70"
+                                class="block h-8 w-full bg-white/70 [--mark-scale:0.7] sm:h-9 sm:[--mark-scale:0.8]"
                                 :style="markStyle(family)"
                                 aria-hidden="true"
                             />
+                            <!-- The names are latin and the slots are narrow on
+                                 a phone, so the tracking comes off rather than
+                                 the longest of them wrapping. -->
                             <span
-                                class="text-[11px] leading-none font-medium tracking-wide text-white/45 uppercase"
+                                class="text-[10px] leading-none font-medium text-white/45 uppercase sm:text-[11px] sm:tracking-wide"
                             >
                                 {{ family.label }}
                             </span>

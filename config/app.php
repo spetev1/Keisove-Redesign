@@ -92,7 +92,13 @@ return [
     |
     */
 
-    'locale' => env('APP_LOCALE', 'en'),
+    /*
+     * The store is Bulgarian, so the default is `bg` rather than something a
+     * fresh clone has to be told. The fallback stays English on purpose: only
+     * the strings the store can actually reach are translated under `lang/bg`,
+     * and everything else resolves against the framework's own English.
+     */
+    'locale' => env('APP_LOCALE', 'bg'),
 
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
 

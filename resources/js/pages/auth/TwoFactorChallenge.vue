@@ -18,18 +18,18 @@ const code = ref<string>('');
 const authConfigContent = computed<TwoFactorConfigContent>(() => {
     if (showRecoveryInput.value) {
         return {
-            title: 'Recovery code',
+            title: 'Код за възстановяване',
             description:
-                'Please confirm access to your account by entering one of your emergency recovery codes.',
-            buttonText: 'login using an authentication code',
+                'Потвърди достъпа до профила си с един от кодовете си за възстановяване.',
+            buttonText: 'влезеш с код от приложението',
         };
     }
 
     return {
-        title: 'Authentication code',
+        title: 'Код за потвърждение',
         description:
-            'Enter the authentication code provided by your authenticator application.',
-        buttonText: 'login using a recovery code',
+            'Въведи кода от приложението си за двуфакторно удостоверяване.',
+        buttonText: 'влезеш с код за възстановяване',
     };
 });
 
@@ -48,7 +48,7 @@ const toggleRecoveryMode = (clearErrors: () => void): void => {
 </script>
 
 <template>
-    <Head title="Two-factor authentication" />
+    <Head title="Двуфакторно удостоверяване" />
 
     <div class="space-y-6">
         <template v-if="!showRecoveryInput">
@@ -83,10 +83,10 @@ const toggleRecoveryMode = (clearErrors: () => void): void => {
                     <InputError :message="errors.code" />
                 </div>
                 <Button type="submit" class="w-full" :disabled="processing"
-                    >Continue</Button
+                    >Продължи</Button
                 >
                 <div class="text-center text-sm text-muted-foreground">
-                    <span>or you can </span>
+                    <span>или можеш да </span>
                     <button
                         type="button"
                         class="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
@@ -108,17 +108,17 @@ const toggleRecoveryMode = (clearErrors: () => void): void => {
                 <Input
                     name="recovery_code"
                     type="text"
-                    placeholder="Enter recovery code"
+                    placeholder="Въведи код за възстановяване"
                     :autofocus="showRecoveryInput"
                     required
                 />
                 <InputError :message="errors.recovery_code" />
                 <Button type="submit" class="w-full" :disabled="processing"
-                    >Continue</Button
+                    >Продължи</Button
                 >
 
                 <div class="text-center text-sm text-muted-foreground">
-                    <span>or you can </span>
+                    <span>или можеш да </span>
                     <button
                         type="button"
                         class="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"

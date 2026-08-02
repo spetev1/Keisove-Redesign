@@ -8,9 +8,15 @@ import { categoryHref } from '@/lib/storefrontNav';
     <!--
         Runs the full width of the viewport, so no square corners and no page
         gutter.
+
+        The taller band on a phone is what holds the brand strip below it down
+        the page. The strip sits flush there and cannot be pushed any lower by
+        its own margin without opening a white line between the two, so the
+        height of this band is what puts it where it belongs - and the room goes
+        to the photograph, which is the part a narrow crop takes most off.
     -->
     <section
-        class="relative flex min-h-[520px] items-stretch overflow-hidden bg-brand-ink text-brand-ink-foreground lg:aspect-[5/2] lg:min-h-0 lg:items-center"
+        class="relative flex min-h-[580px] items-stretch overflow-hidden bg-brand-ink text-brand-ink-foreground sm:min-h-[520px] lg:aspect-[5/2] lg:min-h-0 lg:items-center"
     >
         <!--
             The photograph is cut to 5/2, the same ratio as the band, so from
@@ -54,8 +60,14 @@ import { categoryHref } from '@/lib/storefrontNav';
             what the flex chain here is for; from `lg` it all reverts to the
             block layout the desktop composition is built on.
         -->
+        <!--
+            The deep top padding on a phone is what drops the copy clear of the
+            header and down into the band. It stops at `sm`, where the band is
+            no taller than it was and the same figure would leave the headline
+            sitting on top of the call to action.
+        -->
         <StorefrontContainer
-            class="relative flex flex-col pt-24 pb-20 lg:block lg:py-14"
+            class="relative flex flex-col pt-44 pb-20 sm:pt-24 lg:block lg:py-14"
         >
             <div
                 class="flex max-w-xl flex-1 flex-col text-center lg:block lg:text-left"

@@ -22,8 +22,8 @@ class HomeTest extends TestCase
                     ->component('storefront/Home')
                     ->has('categories')
                     ->has('promotions')
-                    ->has('newProducts')
                     ->has('accessories')
+                    ->missing('newProducts')
             );
     }
 
@@ -91,7 +91,7 @@ class HomeTest extends TestCase
 
     public function test_the_promotions_row_carries_only_discounted_products_biggest_saving_first(): void
     {
-        $category = Category::factory()->create();
+        $category = Category::factory()->create(['slug' => 'keisove']);
 
         $smallSaving = Product::factory()->create([
             'category_id' => $category->id,
@@ -117,24 +117,55 @@ class HomeTest extends TestCase
             );
     }
 
-    public function test_the_new_row_carries_only_what_is_marked_new(): void
+    /**
+     * The front page is a phone shop's, so a discounted perfume or toy stays
+     * out of its promotions row - it is still on offer everywhere else, the
+     * promotions page included, which is what the row's own link opens.
+     */
+    public function test_the_promotions_row_leaves_out_departments_that_are_not_phone_related(): void
     {
-        $category = Category::factory()->create();
+        $cases = Category::factory()->create(['slug' => 'keisove']);
+        $perfume = Category::factory()->create(['slug' => 'parfyumi']);
 
-        $arrival = Product::factory()->create([
-            'category_id' => $category->id,
-            'is_new' => true,
+        $discountedCase = Product::factory()->create([
+            'category_id' => $cases->id,
+            'price_in_stotinki' => 2000,
+            'compare_at_price_in_stotinki' => 2500,
         ]);
+        // The deeper saving, so ordering alone cannot be what keeps it out.
         Product::factory()->create([
-            'category_id' => $category->id,
-            'is_new' => false,
+            'category_id' => $perfume->id,
+            'price_in_stotinki' => 5000,
+            'compare_at_price_in_stotinki' => 9000,
         ]);
 
         $this->get(route('home'))
             ->assertInertia(
                 fn (AssertableInertia $page) => $page
-                    ->has('newProducts', 1)
-                    ->where('newProducts.0.id', $arrival->id)
+                    ->has('promotions', 1)
+                    ->where('promotions.0.id', $discountedCase->id)
+            );
+    }
+
+    /**
+     * The homepage no longer gives new arrivals a row of their own, but the
+     * flag behind it is still what the "НОВО" badge and the category filter
+     * read, so it has to keep reaching the rows that remain.
+     */
+    public function test_a_new_arrival_still_reaches_the_storefront_marked_new(): void
+    {
+        $accessories = Category::factory()->create(['slug' => 'aksesoari']);
+
+        Product::factory()->create([
+            'category_id' => $accessories->id,
+            'is_new' => true,
+        ]);
+
+        $this->get(route('home'))
+            ->assertInertia(
+                fn (AssertableInertia $page) => $page
+                    ->has('accessories', 1)
+                    ->where('accessories.0.isNew', true)
             );
     }
 
@@ -158,7 +189,7 @@ class HomeTest extends TestCase
 
     public function test_a_discounted_product_is_sent_with_a_struck_price_and_a_rounded_badge(): void
     {
-        $category = Category::factory()->create();
+        $category = Category::factory()->create(['slug' => 'keisove']);
 
         Product::factory()->create([
             'category_id' => $category->id,

@@ -20,6 +20,24 @@ class HomeController extends Controller
      */
     protected const PRODUCTS_PER_ROW = 10;
 
+    /**
+     * The departments the homepage's promotions row draws from - the phone
+     * side of the catalogue. The store also discounts perfume and toys, and
+     * they still carry their badge everywhere else, but a bottle of scent
+     * between two cases is what makes the front page read as a market stall
+     * rather than a phone shop.
+     *
+     * The promotions page itself is untouched and still lists every department,
+     * which is what the row's "виж всички" opens.
+     *
+     * @var list<string>
+     */
+    protected const PROMOTED_DEPARTMENTS = [
+        'keisove',
+        'protektori',
+        'aksesoari',
+    ];
+
     public function __invoke(): Response
     {
         return Inertia::render('storefront/Home', [
@@ -28,7 +46,6 @@ class HomeController extends Controller
             ),
             'deviceFamilies' => $this->deviceFamilies(),
             'promotions' => ProductResource::collection($this->discounted()),
-            'newProducts' => ProductResource::collection($this->arrivals()),
             'accessories' => ProductResource::collection(
                 $this->fromDepartment('aksesoari')
             ),
@@ -54,15 +71,22 @@ class HomeController extends Controller
     }
 
     /**
-     * Everything carrying a struck price, biggest saving first - the same order
-     * the promotions page itself lists them in, so the row reads as the front of
-     * that page rather than a different selection.
+     * What the phone departments have on offer, biggest saving first - the same
+     * order the promotions page lists them in, so the row reads as a slice of
+     * that page rather than a selection sorted some other way.
      *
      * @return Collection<int, Product>
      */
     protected function discounted(): Collection
     {
         return $this->row()
+            ->whereHas(
+                'category',
+                fn (Builder $category) => $category->whereIn(
+                    'slug',
+                    self::PROMOTED_DEPARTMENTS,
+                ),
+            )
             ->whereColumn(
                 'compare_at_price_in_stotinki',
                 '>',
@@ -71,17 +95,6 @@ class HomeController extends Controller
             ->orderByRaw(
                 '(compare_at_price_in_stotinki - price_in_stotinki) DESC'
             )
-            ->orderBy('sort_order')
-            ->get();
-    }
-
-    /**
-     * @return Collection<int, Product>
-     */
-    protected function arrivals(): Collection
-    {
-        return $this->row()
-            ->where('is_new', true)
             ->orderBy('sort_order')
             ->get();
     }

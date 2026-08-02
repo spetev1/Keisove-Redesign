@@ -7,6 +7,7 @@ use App\Models\Product;
 use Database\Seeders\BrandSeeder;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\ProductSeeder;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
@@ -39,18 +40,35 @@ class DemoCatalogueTest extends TestCase
             'slug',
             'aksesoari',
         )->count();
+        // The row draws from the phone departments only, and never loads more
+        // than it is capped at, so the expected count is both of those at once.
+        $promotionCount = min(10, Product::query()
+            ->whereHas(
+                'category',
+                fn (Builder $category) => $category->whereIn(
+                    'slug',
+                    ['keisove', 'protektori', 'aksesoari'],
+                ),
+            )
+            ->whereColumn(
+                'compare_at_price_in_stotinki',
+                '>',
+                'price_in_stotinki',
+            )
+            ->count());
 
         $this->assertGreaterThanOrEqual(3, $categoryCount);
         $this->assertGreaterThan(0, $accessoryCount);
+
+        // Enough to fill the visible part of the row and leave something to
+        // scroll to, which is the point of seeding them at all.
+        $this->assertGreaterThanOrEqual(6, $promotionCount);
 
         $this->get(route('home'))
             ->assertOk()
             ->assertInertia(
                 fn (AssertableInertia $page) => $page
-                    // Both are seeded past the row's ceiling, so a full row
-                    // proves the limit is doing its job as well.
-                    ->has('promotions', 10)
-                    ->has('newProducts', 10)
+                    ->has('promotions', $promotionCount)
                     ->has('accessories', $accessoryCount)
                     ->has('categories', $categoryCount)
             );
