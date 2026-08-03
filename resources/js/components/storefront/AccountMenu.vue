@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
-import { dashboard, logout, register } from '@/routes';
+import { dashboard, login, logout, register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
@@ -30,6 +30,14 @@ const CLOSE_DELAY_MS = 200;
 const page = usePage();
 
 const currentUser = computed(() => page.props.auth?.user ?? null);
+
+/**
+ * Where the phone's trigger goes instead of opening the panel. Someone already
+ * signed in has nothing to do on the login page, so they get their dashboard.
+ */
+const mobileTriggerHref = computed(() =>
+    currentUser.value ? dashboard() : login(),
+);
 
 const isOpen = ref(false);
 const root = ref<HTMLElement | null>(null);
@@ -86,6 +94,10 @@ function handleEscape(): void {
 }
 
 onBeforeUnmount(clearTimers);
+
+/** Display is left off, because the two triggers carry their own. */
+const triggerClasses =
+    'min-w-11 items-center justify-center gap-1.5 rounded-xl border border-border px-3 text-[13px] font-bold text-secondary-foreground transition-colors hover:border-brand-accent hover:text-brand-accent-ink focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none';
 </script>
 
 <template>
@@ -99,35 +111,46 @@ onBeforeUnmount(clearTimers);
         @keydown.esc="handleEscape"
     >
         <!--
-            The label is what the design puts here rather than an icon alone, so
-            the icon drops away on a phone and the word carries it from `sm` up -
+            On a phone the trigger is a link to the login page rather than a
+            button that opens the panel: the panel carries a full login form,
+            which is a page's worth of fields crammed into a 320px dropdown on a
+            360px screen. The page it goes to has room for the same form.
+        -->
+        <Link
+            :href="mobileTriggerHref"
+            :class="cn(triggerClasses, 'flex sm:hidden', props.triggerClass)"
+            aria-label="Моят профил"
+        >
+            <User class="size-4" />
+        </Link>
+
+        <!--
+            The label is what the design puts here rather than an icon alone -
             "Профил" is shorter than the pictogram is wide once it has a border
             around it.
         -->
         <button
             type="button"
-            :class="
-                cn(
-                    'flex min-w-11 items-center justify-center gap-1.5 rounded-xl border border-border px-3 text-[13px] font-bold text-secondary-foreground transition-colors hover:border-brand-accent hover:text-brand-accent-ink focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
-                    props.triggerClass,
-                )
-            "
+            :class="cn(triggerClasses, 'hidden sm:flex', props.triggerClass)"
             aria-haspopup="true"
             :aria-expanded="isOpen"
             aria-label="Моят профил"
             @click="isOpen ? closeNow() : openNow()"
         >
-            <User class="size-4 sm:hidden" />
-            <span class="hidden sm:inline">Профил</span>
+            <span>Профил</span>
         </button>
 
         <!--
             Kept mounted rather than toggled with v-if so it can animate both
             ways; `invisible` takes the form out of the tab order while closed.
+
+            `hidden` below `sm` because the phone's trigger navigates instead:
+            a stray hover or focus must not leave the panel open behind a tap
+            that is already on its way to the login page.
         -->
         <div
             :class="[
-                'absolute top-full right-0 z-50 w-80 pt-3',
+                'absolute top-full right-0 z-50 hidden w-80 pt-3 sm:block',
                 isOpen ? 'visible' : 'invisible',
             ]"
         >
