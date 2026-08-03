@@ -114,14 +114,21 @@ const tabClasses =
             </Link>
 
             <!--
-                `basis-[300px]` with `min-w` under it is what lets the field give
-                way on a narrow screen instead of forcing the row to wrap: it
-                asks for 300px, shrinks to 200, and only then does the account
-                and cart group drop to a line of its own.
+                Wrapping is decided on `basis`, not on `min-w`: the field asks
+                for 300px, which no phone can fit beside the logo, so it takes a
+                line of its own however narrow the screen gets. Left in source
+                order that pushed the account and cart group down to a *third*
+                line, where it sat alone against an empty left half.
+
+                `order-last` spends that same wrap better - the buttons ride up
+                beside the logo and the bar loses a whole row.
+
+                From `sm` up the row is wide enough to share, so the field goes
+                back to asking for 300px and shrinking to 200 before it wraps.
             -->
             <form
                 :class="[
-                    'flex min-w-[200px] flex-1 basis-[300px] items-center gap-2.5 rounded-xl border border-border bg-brand-surface-strong px-3.5 transition-[padding,border-color] duration-250 ease-out focus-within:border-brand-accent motion-reduce:transition-none',
+                    'order-last flex basis-full items-center gap-2.5 rounded-xl border border-border bg-brand-surface-strong px-3.5 transition-[padding,border-color] duration-250 ease-out focus-within:border-brand-accent motion-reduce:transition-none sm:order-none sm:min-w-[200px] sm:flex-1 sm:basis-[300px]',
                     isCompact ? 'py-[7px]' : 'py-2.5',
                 ]"
                 role="search"

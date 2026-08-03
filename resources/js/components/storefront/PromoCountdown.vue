@@ -97,8 +97,14 @@ const units = computed(() => [
             <!--
                 Two by two on a phone rather than a wrapping row, which left the
                 seconds stranded on a line of their own under the other three.
+
+                `w-full` because the grid is a flex item: sized to its content it
+                sat in the left half of the card with the rest of the line empty.
+                Stretching it lets the two columns share the width instead.
             -->
-            <ul class="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+            <ul
+                class="grid w-full grid-cols-2 gap-2.5 sm:w-auto sm:grid-cols-4"
+            >
                 <li
                     v-for="(unit, index) in units"
                     :key="unit.label"
