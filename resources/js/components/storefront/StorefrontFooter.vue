@@ -46,7 +46,10 @@ const currentYear = computed(() => new Date().getFullYear());
             class="grid gap-7 py-7 sm:grid-cols-2 sm:py-9 lg:grid-cols-4 lg:py-12"
         >
             <div class="flex flex-col gap-3">
-                <BrandWordmark class="h-16" />
+                <!-- `self-start` so the column's default `align-items: stretch`
+                     does not pull the mark's auto width out to the full column
+                     and squash it against its fixed height. -->
+                <BrandWordmark class="h-16 self-start" />
                 <p
                     class="max-w-[30ch] text-sm leading-relaxed text-muted-foreground"
                 >
