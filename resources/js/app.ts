@@ -26,7 +26,10 @@ createInertiaApp({
         }
     },
     progress: {
-        color: '#4B5563',
+        // The brand violet rather than Laravel's grey. Spelled out because the
+        // progress bar is mounted outside the app, where the theme's custom
+        // properties are not in scope; it tracks --brand-highlight.
+        color: '#A21CAF',
     },
 });
 

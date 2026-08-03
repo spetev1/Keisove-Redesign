@@ -57,23 +57,104 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
-     * Each department, plus the handset families it stocks, so the header menu
-     * can offer a way straight into a filtered view.
+     * The departments, each with its children and the handset families it
+     * stocks, so the header and footer can offer a way straight into any of
+     * them without every controller fetching the taxonomy again.
+     *
+     * Only departments are returned at the top level; a child is reached
+     * through its parent's `children`.
      *
      * @return list<array<string, mixed>>
      */
     protected function storefrontCategories(): array
     {
         $familiesByCategory = $this->deviceFamiliesByCategory();
+        $countsByCategory = $this->productCountsByCategory();
 
         return Category::query()
-            ->withCount('products')
-            ->orderBy('sort_order')
+            ->departments()
+            ->with('children')
+            ->ordered()
             ->get()
-            ->map(fn (Category $category): array => [
-                ...(new CategoryResource($category))->resolve(),
-                'deviceFamilies' => $familiesByCategory[$category->id] ?? [],
+            ->map(fn (Category $department): array => [
+                ...(new CategoryResource($department))->resolve(),
+                /*
+                 * A department holds no products itself, so its count and its
+                 * handsets are the sum of whatever sits beneath it.
+                 */
+                'productCount' => $this->subtreeCount(
+                    $department,
+                    $countsByCategory,
+                ),
+                'deviceFamilies' => $this->subtreeFamilies(
+                    $department,
+                    $familiesByCategory,
+                ),
+                'children' => $department->children
+                    ->map(fn (Category $child): array => [
+                        ...(new CategoryResource($child))->resolve(),
+                        'productCount' => $countsByCategory[$child->id] ?? 0,
+                        'deviceFamilies' => $familiesByCategory[$child->id] ?? [],
+                    ])
+                    ->all(),
             ])
+            ->all();
+    }
+
+    /**
+     * @param  array<int, int>  $counts
+     */
+    protected function subtreeCount(Category $department, array $counts): int
+    {
+        $total = 0;
+
+        foreach ($department->subtreeIds() as $id) {
+            $total += $counts[$id] ?? 0;
+        }
+
+        return $total;
+    }
+
+    /**
+     * The handsets anywhere beneath a department, still in the order the enum
+     * declares them rather than however the children happened to be visited.
+     *
+     * @param  array<int, list<array{value: string, label: string}>>  $families
+     * @return list<array{value: string, label: string}>
+     */
+    protected function subtreeFamilies(
+        Category $department,
+        array $families,
+    ): array {
+        $stocked = [];
+
+        foreach ($department->subtreeIds() as $id) {
+            foreach ($families[$id] ?? [] as $family) {
+                $stocked[$family['value']] = $family;
+            }
+        }
+
+        return array_values(array_filter(
+            array_map(
+                fn (DeviceFamily $family): ?array => $stocked[$family->value] ?? null,
+                DeviceFamily::cases(),
+            ),
+        ));
+    }
+
+    /**
+     * Counted in one pass rather than per category, because the taxonomy is now
+     * thirty rows and a count per row is thirty queries on every request.
+     *
+     * @return array<int, int>
+     */
+    protected function productCountsByCategory(): array
+    {
+        return Product::query()
+            ->selectRaw('category_id, count(*) as total')
+            ->groupBy('category_id')
+            ->pluck('total', 'category_id')
+            ->map(fn (mixed $total): int => (int) $total)
             ->all();
     }
 

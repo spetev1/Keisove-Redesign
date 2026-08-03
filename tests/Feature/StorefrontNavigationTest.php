@@ -17,7 +17,7 @@ class StorefrontNavigationTest extends TestCase
 
     public function test_a_category_page_lists_only_its_own_products(): void
     {
-        $cases = Category::factory()->create(['slug' => 'keisove']);
+        $cases = Category::factory()->create(['slug' => 'kalafi']);
         $perfumes = Category::factory()->create(['slug' => 'parfyumi']);
 
         $ownProduct = Product::factory()->create(['category_id' => $cases->id]);
@@ -28,10 +28,109 @@ class StorefrontNavigationTest extends TestCase
             ->assertInertia(
                 fn (AssertableInertia $page) => $page
                     ->component('storefront/Category')
-                    ->where('category.slug', 'keisove')
+                    ->where('category.slug', 'kalafi')
                     ->has('products', 1)
                     ->where('products.0.id', $ownProduct->id)
             );
+    }
+
+    /**
+     * A department holds nothing itself, so its page has to gather what sits on
+     * its children or it opens empty.
+     */
+    public function test_a_department_page_lists_its_childrens_products(): void
+    {
+        $department = Category::factory()->create(['slug' => 'parfyumi']);
+        $headphones = Category::factory()->create([
+            'slug' => 'damski-parfyumi',
+            'parent_id' => $department->id,
+        ]);
+        $speakers = Category::factory()->create([
+            'slug' => 'mazhki-parfyumi',
+            'parent_id' => $department->id,
+        ]);
+        $elsewhere = Category::factory()->create(['slug' => 'karti-pamet']);
+
+        $headphone = Product::factory()->create([
+            'category_id' => $headphones->id,
+        ]);
+        $speaker = Product::factory()->create(['category_id' => $speakers->id]);
+        Product::factory()->create(['category_id' => $elsewhere->id]);
+
+        $this->get(route('category.show', $department))
+            ->assertOk()
+            ->assertInertia(
+                fn (AssertableInertia $page) => $page
+                    ->has('products', 2)
+                    ->where('products.0.id', $headphone->id)
+                    ->where('products.1.id', $speaker->id)
+                    // The children are offered as a way further in.
+                    ->has('category.children', 2)
+                    ->where('category.children.0.slug', 'damski-parfyumi')
+            );
+    }
+
+    /**
+     * A child answers for itself alone - reaching sideways into a sibling would
+     * make the subcategory pointless.
+     */
+    public function test_a_subcategory_page_excludes_its_siblings(): void
+    {
+        $department = Category::factory()->create(['slug' => 'parfyumi']);
+        $headphones = Category::factory()->create([
+            'slug' => 'damski-parfyumi',
+            'parent_id' => $department->id,
+        ]);
+        $speakers = Category::factory()->create([
+            'slug' => 'mazhki-parfyumi',
+            'parent_id' => $department->id,
+        ]);
+
+        $headphone = Product::factory()->create([
+            'category_id' => $headphones->id,
+        ]);
+        Product::factory()->create(['category_id' => $speakers->id]);
+
+        $this->get(route('category.show', $headphones))
+            ->assertOk()
+            ->assertInertia(
+                fn (AssertableInertia $page) => $page
+                    ->has('products', 1)
+                    ->where('products.0.id', $headphone->id)
+                    // And names its department, so there is a step back up.
+                    ->where('category.parent.slug', 'parfyumi')
+            );
+    }
+
+    /**
+     * The nav row and the footer carry departments; a child is reached through
+     * its parent, so a child must not appear at the top level.
+     */
+    public function test_the_shared_taxonomy_lists_departments_with_their_children_nested(): void
+    {
+        $department = Category::factory()->create([
+            'slug' => 'zaryadni',
+            'sort_order' => 1,
+        ]);
+        $child = Category::factory()->create([
+            'slug' => 'zaryadni-220v',
+            'parent_id' => $department->id,
+        ]);
+        Product::factory()->count(4)->create(['category_id' => $child->id]);
+
+        $this->get(route('home'))->assertInertia(
+            fn (AssertableInertia $page) => $page
+                ->has('storefrontCategories', 1)
+                ->where('storefrontCategories.0.slug', 'zaryadni')
+                // The department's count is its subtree's, not its own zero.
+                ->where('storefrontCategories.0.productCount', 4)
+                ->has('storefrontCategories.0.children', 1)
+                ->where(
+                    'storefrontCategories.0.children.0.slug',
+                    'zaryadni-220v',
+                )
+                ->where('storefrontCategories.0.children.0.productCount', 4)
+        );
     }
 
     public function test_a_category_page_lists_products_in_their_seeded_order(): void
@@ -101,7 +200,7 @@ class StorefrontNavigationTest extends TestCase
     public function test_the_header_category_menu_is_shared_with_every_storefront_page(): void
     {
         $cases = Category::factory()->create([
-            'slug' => 'keisove',
+            'slug' => 'kalafi',
             'sort_order' => 1,
         ]);
         Category::factory()->create(['slug' => 'parfyumi', 'sort_order' => 2]);
@@ -111,7 +210,7 @@ class StorefrontNavigationTest extends TestCase
             $this->get($url)->assertInertia(
                 fn (AssertableInertia $page) => $page
                     ->has('storefrontCategories', 2)
-                    ->where('storefrontCategories.0.slug', 'keisove')
+                    ->where('storefrontCategories.0.slug', 'kalafi')
                     ->where('storefrontCategories.0.productCount', 3)
             );
         }
@@ -119,7 +218,7 @@ class StorefrontNavigationTest extends TestCase
 
     public function test_a_category_can_be_narrowed_to_one_handset_family(): void
     {
-        $cases = Category::factory()->create(['slug' => 'keisove']);
+        $cases = Category::factory()->create(['slug' => 'kalafi']);
 
         $iphoneCase = Product::factory()->create([
             'category_id' => $cases->id,

@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             BrandSeeder::class,
             ProductSeeder::class,
+            // Reads the products, so it has to follow them.
+            CategoryArtworkSeeder::class,
         ]);
 
         if (! User::where('email', 'test@example.com')->exists()) {

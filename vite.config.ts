@@ -12,8 +12,13 @@ export default defineConfig({
             input: ['resources/css/app.css', 'resources/js/app.ts'],
             refresh: true,
             fonts: [
-                bunny('Instrument Sans', {
-                    weights: [400, 500, 600],
+                /*
+                 * The redesign is set in Manrope, and leans on the heavy end of
+                 * it: every price, figure and call to action is 800, so the
+                 * weights go up that far rather than stopping at semibold.
+                 */
+                bunny('Manrope', {
+                    weights: [400, 500, 600, 700, 800],
                 }),
             ],
         }),

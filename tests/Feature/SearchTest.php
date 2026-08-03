@@ -24,7 +24,7 @@ class SearchTest extends TestCase
      */
     public function test_a_term_matches_the_printed_name_across_departments(): void
     {
-        $cases = Category::factory()->create(['slug' => 'keisove']);
+        $cases = Category::factory()->create(['slug' => 'kalafi']);
         $accessories = Category::factory()->create(['slug' => 'aksesoari']);
 
         $matchingCase = Product::factory()->create([

@@ -23,6 +23,22 @@ class CategoryResource extends JsonResource
             'tagline' => $this->tagline,
             'imageUrl' => $this->image_path ? asset($this->image_path) : null,
             'productCount' => $this->whenCounted('products'),
+            /*
+             * Only where the caller loaded them. A department sends its children
+             * so the page can offer them; a child sends its parent so the page
+             * can point back up.
+             */
+            'children' => $this->whenLoaded(
+                'children',
+                fn () => self::collection($this->children)->resolve(),
+            ),
+            'parent' => $this->whenLoaded(
+                'parent',
+                fn () => [
+                    'name' => $this->parent->name,
+                    'slug' => $this->parent->slug,
+                ],
+            ),
         ];
     }
 }

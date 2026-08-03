@@ -10,8 +10,13 @@ export type StorefrontProduct = {
     imageUrl: string | null;
     price: string;
     compareAtPrice: string | null;
+    /** The same two figures in euro, for the changeover line under the price. */
+    priceInEur: string;
+    compareAtPriceInEur: string | null;
     discountPercentage: number | null;
     isNew: boolean;
+    /** The handset family printed as the card's eyebrow, where one applies. */
+    deviceFamilyLabel: string | null;
     categorySlug?: string;
 };
 
@@ -64,14 +69,36 @@ export type CategoryPriceBounds = {
     max: number;
 };
 
+/**
+ * The taxonomy is two levels deep. A department carries `children`; a child
+ * carries `parent`. Neither is always sent - it depends on what the page needs.
+ */
 export type StorefrontCategory = {
     id: number;
     name: string;
     slug: string;
     tagline: string | null;
     imageUrl: string | null;
-    /** Only present where the controller counted the relation. */
+    /**
+     * Only present where the controller counted it. On a department this is the
+     * whole subtree, because a department holds no products of its own.
+     */
     productCount?: number;
-    /** Handset families this department stocks; empty where none apply. */
+    /** Handset families stocked anywhere beneath it; empty where none apply. */
     deviceFamilies?: { value: string; label: string }[];
+    children?: StorefrontCategory[];
+    parent?: { name: string; slug: string } | null;
+};
+
+/**
+ * One of the two cards standing beside the hero. Both are real destinations
+ * with a real photograph behind them; only the label copy is written.
+ */
+export type HomeSpotlight = {
+    /** Completes the card's written title, e.g. the handset family's name. */
+    subject: string;
+    href: string;
+    imageUrl: string | null;
+    /** The bestseller card prints the department's genuine lowest price. */
+    fromPrice?: string | null;
 };

@@ -16,4 +16,18 @@ return [
 
     'password' => env('DEMO_PASSWORD'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Sale Deadline
+    |--------------------------------------------------------------------------
+    |
+    | The moment the homepage's countdown band runs to. Left empty the band
+    | counts down to the end of the current week, which keeps a demo link that
+    | is opened over several weeks from showing an expired promotion. Set it to
+    | a date and time to pin the countdown for a scheduled pitch.
+    |
+    */
+
+    'sale_ends_at' => env('DEMO_SALE_ENDS_AT'),
+
 ];

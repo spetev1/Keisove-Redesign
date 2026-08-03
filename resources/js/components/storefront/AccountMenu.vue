@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Form, Link, usePage } from '@inertiajs/vue3';
 import { User } from '@lucide/vue';
+import type { HTMLAttributes } from 'vue';
 import { computed, onBeforeUnmount, ref } from 'vue';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
@@ -8,18 +9,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { cn } from '@/lib/utils';
 import { dashboard, logout, register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
 type Props = {
-    /** Whether the gooey pill is currently sitting under this item. */
-    isActive?: boolean;
+    /**
+     * The header owns the button's height, because it shrinks along with the
+     * rest of the bar as the page scrolls.
+     */
+    triggerClass?: HTMLAttributes['class'];
 };
 
-withDefaults(defineProps<Props>(), {
-    isActive: false,
-});
+const props = defineProps<Props>();
 
 const OPEN_DELAY_MS = 90;
 const CLOSE_DELAY_MS = 200;
@@ -95,18 +98,27 @@ onBeforeUnmount(clearTimers);
         @focusout="handleFocusOut"
         @keydown.esc="handleEscape"
     >
+        <!--
+            The label is what the design puts here rather than an icon alone, so
+            the icon drops away on a phone and the word carries it from `sm` up -
+            "Профил" is shorter than the pictogram is wide once it has a border
+            around it.
+        -->
         <button
             type="button"
-            class="flex items-center rounded-full px-3 py-2 transition-colors duration-300 focus-visible:outline-none motion-reduce:transition-none"
             :class="
-                isActive ? 'text-brand-ink' : 'text-brand-ink-foreground/85'
+                cn(
+                    'flex min-w-11 items-center justify-center gap-1.5 rounded-xl border border-border px-3 text-[13px] font-bold text-secondary-foreground transition-colors hover:border-brand-accent hover:text-brand-accent-ink focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+                    props.triggerClass,
+                )
             "
             aria-haspopup="true"
             :aria-expanded="isOpen"
             aria-label="Моят профил"
             @click="isOpen ? closeNow() : openNow()"
         >
-            <User class="size-5" />
+            <User class="size-4 sm:hidden" />
+            <span class="hidden sm:inline">Профил</span>
         </button>
 
         <!--

@@ -30,7 +30,9 @@ class CategoryController extends Controller
         $filters = $this->filtersFrom($request);
 
         return Inertia::render('storefront/Category', [
-            'category' => new CategoryResource($category),
+            'category' => new CategoryResource(
+                $category->load('children', 'parent')
+            ),
             'filters' => $filters,
             'brands' => $this->brandFacets($category, $filters),
             'deviceFamilies' => $this->deviceFacets($category, $filters),
@@ -169,7 +171,13 @@ class CategoryController extends Controller
         ?string $except = null,
     ): Builder {
         return Product::query()
-            ->where('products.category_id', $category->id)
+            /*
+             * A department holds nothing itself - its products sit on its
+             * children - so every query here works across the subtree rather
+             * than on one row. A child answers for itself alone, which is the
+             * same expression with one id in it.
+             */
+            ->whereIn('products.category_id', $category->subtreeIds())
             ->when(
                 $filters['q'] !== null,
                 fn (Builder $query) => $this->matching($query, $filters['q']),
@@ -317,7 +325,7 @@ class CategoryController extends Controller
     protected function offersAChoice(Category $category, string $column): bool
     {
         return Product::query()
-            ->where('category_id', $category->id)
+            ->whereIn('category_id', $category->subtreeIds())
             ->whereNotNull($column)
             ->distinct()
             ->count($column) >= self::MINIMUM_FACET_OPTIONS;
@@ -378,7 +386,7 @@ class CategoryController extends Controller
     protected function priceBounds(Category $category): array
     {
         $bounds = Product::query()
-            ->where('category_id', $category->id)
+            ->whereIn('category_id', $category->subtreeIds())
             ->selectRaw('MIN(price_in_stotinki) as low, MAX(price_in_stotinki) as high')
             ->first();
 

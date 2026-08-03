@@ -14,9 +14,8 @@
 
 @theme inline {
     --font-sans:
-        Instrument Sans, ui-sans-serif, system-ui, sans-serif,
-        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-        'Noto Color Emoji';
+        Manrope, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
@@ -52,17 +51,47 @@
 
     /*
       Keisove brand tokens. These sit alongside the shadcn palette rather than
-      replacing it: `primary` already carries the brand violet, and these cover
-      the few surfaces the storefront needs that the base palette has no name
-      for - the tinted headline, the lavender section panels, the near-black
-      hero, and the green "НОВО" badge.
+      replacing it, and they are what the storefront is skinned from.
+
+      The redesign buys with two colours. `brand-ink` is the deep violet every
+      dark surface is cut from - the announcement bar, the hero, the active nav
+      tab, the newsletter card. `brand-accent` is the green that every action
+      is painted in, which is why it is an accent rather than a success colour:
+      it sits on buttons a shopper is meant to press, not on confirmations.
+
+      Re-skinning to the client's real brand is a matter of moving the two hues
+      below; nothing downstream spells a colour out.
     */
-    --color-brand-highlight: var(--brand-highlight);
-    --color-brand-highlight-soft: var(--brand-highlight-soft);
-    --color-brand-surface: var(--brand-surface);
-    --color-brand-surface-strong: var(--brand-surface-strong);
     --color-brand-ink: var(--brand-ink);
     --color-brand-ink-foreground: var(--brand-ink-foreground);
+    --color-brand-ink-hover: var(--brand-ink-hover);
+    --color-brand-ink-muted: var(--brand-ink-muted);
+    --color-brand-ink-soft: var(--brand-ink-soft);
+    --color-brand-ink-surface: var(--brand-ink-surface);
+    --color-brand-ink-surface-foreground: var(--brand-ink-surface-foreground);
+
+    --color-brand-highlight: var(--brand-highlight);
+    --color-brand-highlight-soft: var(--brand-highlight-soft);
+
+    --color-brand-accent: var(--brand-accent);
+    --color-brand-accent-hover: var(--brand-accent-hover);
+    --color-brand-accent-strong: var(--brand-accent-strong);
+    --color-brand-accent-foreground: var(--brand-accent-foreground);
+    --color-brand-accent-ink: var(--brand-accent-ink);
+    --color-brand-accent-ink-strong: var(--brand-accent-ink-strong);
+    --color-brand-accent-surface: var(--brand-accent-surface);
+    --color-brand-accent-surface-hover: var(--brand-accent-surface-hover);
+    --color-brand-accent-surface-faint: var(--brand-accent-surface-faint);
+    --color-brand-accent-border: var(--brand-accent-border);
+    --color-brand-accent-on-ink: var(--brand-accent-on-ink);
+
+    --color-brand-sale: var(--brand-sale);
+    --color-brand-sale-bright: var(--brand-sale-bright);
+    --color-brand-star: var(--brand-star);
+
+    --color-brand-surface: var(--brand-surface);
+    --color-brand-surface-strong: var(--brand-surface-strong);
+
     --color-success: var(--success);
     --color-success-foreground: var(--success-foreground);
 
@@ -109,7 +138,7 @@
   travel at the same speed however many copies there are.
 */
 @theme {
-    --animate-marquee: marquee 45s linear infinite;
+    --animate-marquee: marquee 26s linear infinite;
 
     @keyframes marquee {
         from {
@@ -118,6 +147,69 @@
 
         to {
             transform: translateX(var(--marquee-shift, -50%));
+        }
+    }
+}
+
+/*
+  The hero's two columns of product photography. Each column repeats its set of
+  shots and travels exactly one set, so the loop lands on a frame identical to
+  the one it started on and shows no seam.
+
+  How far one set is depends on how many copies the column renders, so the
+  component sets `--collage-shift` from that count rather than the distance being
+  written in here. Getting the two out of step is exactly what makes a marquee
+  appear to snap back to the start, so they are derived from one number.
+
+  The columns run at different speeds and in opposite directions, which is what
+  stops the collage reading as one sheet sliding past.
+*/
+@theme {
+    --animate-collage-up: collage-up 26s linear infinite;
+    --animate-collage-down: collage-down 32s linear infinite;
+
+    @keyframes collage-up {
+        from {
+            transform: translateY(0);
+        }
+
+        to {
+            transform: translateY(var(--collage-shift, -50%));
+        }
+    }
+
+    @keyframes collage-down {
+        from {
+            transform: translateY(var(--collage-shift, -50%));
+        }
+
+        to {
+            transform: translateY(0);
+        }
+    }
+}
+
+/*
+  "Промоции" is the one nav item that moves, because it is the one that is not
+  a department but an offer with an end date. It breathes rather than blinks:
+  the colour warms and the word swells by a hair, which reads at a glance
+  without pulling the eye off whatever is being read.
+*/
+@theme {
+    --animate-promo-pulse: promo-pulse 1.4s ease-in-out infinite;
+
+    @keyframes promo-pulse {
+        0%,
+        100% {
+            color: var(--brand-sale);
+            transform: scale(0.97);
+            opacity: 1;
+        }
+
+        50% {
+            color: var(--brand-sale-bright);
+            transform: scale(1);
+            opacity: 0.8;
         }
     }
 }
@@ -138,9 +230,8 @@
     body,
     html {
         --font-sans:
-            'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
-            'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-            'Noto Color Emoji';
+            Manrope, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+            'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     }
 }
 
@@ -153,99 +244,156 @@
 :root,
 .theme-light {
     color-scheme: light;
-    --background: hsl(0 0% 100%);
-    --foreground: hsl(264 16% 11%);
-    --card: hsl(0 0% 100%);
-    --card-foreground: hsl(264 16% 11%);
-    --popover: hsl(0 0% 100%);
-    --popover-foreground: hsl(264 16% 11%);
-    --primary: hsl(267 71% 52%);
-    --primary-foreground: hsl(0 0% 100%);
-    --secondary: hsl(267 52% 96%);
-    --secondary-foreground: hsl(267 46% 28%);
-    --muted: hsl(266 30% 96.5%);
-    --muted-foreground: hsl(262 9% 46%);
-    --accent: hsl(267 52% 96%);
-    --accent-foreground: hsl(267 46% 28%);
-    --destructive: hsl(0 84.2% 60.2%);
-    --destructive-foreground: hsl(0 0% 98%);
-    --border: hsl(265 22% 91%);
-    --input: hsl(265 22% 89%);
-    --ring: hsl(267 71% 52%);
-    --brand-highlight: hsl(272 87% 68%);
     /*
-      A washed-out `brand-highlight`, light enough to read as a light source
-      rather than as a colour. The hero button's travelling streak is what
-      needs it; on a surface it would be too pale to hold anything.
+      Not white. The page carries the faintest green cast, which is what lets
+      the white panels sitting on it read as panels rather than as more page.
     */
-    --brand-highlight-soft: hsl(272 95% 86%);
-    --brand-surface: hsl(268 54% 97%);
-    /* A deeper lavender for panels that sit on top of `brand-surface`. */
-    --brand-surface-strong: hsl(268 48% 93%);
-    --brand-ink: hsl(266 24% 9%);
-    --brand-ink-foreground: hsl(0 0% 100%);
-    --success: hsl(145 63% 40%);
-    --success-foreground: hsl(0 0% 100%);
-    --chart-1: hsl(267 71% 52%);
-    --chart-2: hsl(272 87% 68%);
-    --chart-3: hsl(285 60% 45%);
-    --chart-4: hsl(43 74% 66%);
-    --chart-5: hsl(145 63% 40%);
+    --background: oklch(0.98 0.008 150);
+    --foreground: oklch(0.24 0.03 285);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.24 0.03 285);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.24 0.03 285);
+    --primary: oklch(0.38 0.16 322);
+    --primary-foreground: oklch(0.99 0.005 322);
+    --secondary: oklch(0.96 0.01 285);
+    --secondary-foreground: oklch(0.35 0.03 285);
+    --muted: oklch(0.97 0.005 285);
+    --muted-foreground: oklch(0.52 0.03 285);
+    --accent: oklch(0.96 0.01 285);
+    --accent-foreground: oklch(0.3 0.03 285);
+    --destructive: oklch(0.55 0.19 25);
+    --destructive-foreground: oklch(1 0 0);
+    --border: oklch(0.93 0.01 285);
+    --input: oklch(0.92 0.01 285);
+    /* Focus rings are green, the same colour every hover border turns. */
+    --ring: oklch(0.58 0.16 155);
+
+    --brand-ink: oklch(0.38 0.16 322);
+    --brand-ink-foreground: oklch(0.97 0.02 322);
+    --brand-ink-hover: oklch(0.46 0.18 322);
+    /* Body copy and labels laid over the violet, in descending weight. */
+    --brand-ink-muted: oklch(0.9 0.04 322);
+    --brand-ink-soft: oklch(0.88 0.05 322);
+    /* A violet tint for icon plates on white, with its own readable text. */
+    --brand-ink-surface: oklch(0.93 0.05 322);
+    --brand-ink-surface-foreground: oklch(0.42 0.16 322);
+
+    /* The brighter violet links and eyebrow labels are set in. */
+    --brand-highlight: oklch(0.52 0.19 322);
+    --brand-highlight-soft: oklch(0.88 0.09 322);
+
+    --brand-accent: oklch(0.58 0.16 155);
+    --brand-accent-hover: oklch(0.66 0.17 152);
+    --brand-accent-strong: oklch(0.52 0.15 155);
+    --brand-accent-foreground: oklch(1 0 0);
+    /* Green dark enough to read as text on a light surface. */
+    --brand-accent-ink: oklch(0.44 0.14 155);
+    --brand-accent-ink-strong: oklch(0.26 0.06 155);
+    --brand-accent-surface: oklch(0.94 0.04 155);
+    --brand-accent-surface-hover: oklch(0.91 0.06 155);
+    --brand-accent-surface-faint: oklch(0.97 0.02 155);
+    --brand-accent-border: oklch(0.86 0.06 155);
+    /* Light enough to hold a label against the violet. */
+    --brand-accent-on-ink: oklch(0.88 0.09 155);
+
+    --brand-sale: oklch(0.55 0.19 25);
+    --brand-sale-bright: oklch(0.72 0.19 35);
+    --brand-star: oklch(0.66 0.15 75);
+
+    /* The well a product photograph sits in, and a step deeper for chips. */
+    --brand-surface: oklch(0.97 0.005 285);
+    --brand-surface-strong: oklch(0.96 0.01 285);
+
+    --success: oklch(0.58 0.16 155);
+    --success-foreground: oklch(1 0 0);
+
+    --chart-1: oklch(0.38 0.16 322);
+    --chart-2: oklch(0.52 0.19 322);
+    --chart-3: oklch(0.58 0.16 155);
+    --chart-4: oklch(0.66 0.15 75);
+    --chart-5: oklch(0.55 0.19 25);
     --radius: 0.75rem;
-    --sidebar-background: hsl(0 0% 98%);
-    --sidebar-foreground: hsl(240 5.3% 26.1%);
-    --sidebar-primary: hsl(0 0% 10%);
-    --sidebar-primary-foreground: hsl(0 0% 98%);
-    --sidebar-accent: hsl(0 0% 94%);
-    --sidebar-accent-foreground: hsl(0 0% 30%);
-    --sidebar-border: hsl(0 0% 91%);
-    --sidebar-ring: hsl(217.2 91.2% 59.8%);
-    --sidebar: hsl(0 0% 98%);
+    --sidebar-background: oklch(0.98 0.005 285);
+    --sidebar-foreground: oklch(0.35 0.02 285);
+    --sidebar-primary: oklch(0.38 0.16 322);
+    --sidebar-primary-foreground: oklch(0.99 0.005 322);
+    --sidebar-accent: oklch(0.95 0.01 285);
+    --sidebar-accent-foreground: oklch(0.3 0.03 285);
+    --sidebar-border: oklch(0.93 0.01 285);
+    --sidebar-ring: oklch(0.58 0.16 155);
+    --sidebar: oklch(0.98 0.005 285);
 }
 
 .dark {
     color-scheme: dark;
-    --background: hsl(266 20% 7%);
-    --foreground: hsl(0 0% 98%);
-    --card: hsl(266 18% 10%);
-    --card-foreground: hsl(0 0% 98%);
-    --popover: hsl(266 18% 10%);
-    --popover-foreground: hsl(0 0% 98%);
-    --primary: hsl(270 80% 62%);
-    --primary-foreground: hsl(0 0% 100%);
-    --secondary: hsl(266 16% 16%);
-    --secondary-foreground: hsl(0 0% 98%);
-    --muted: hsl(266 14% 17%);
-    --muted-foreground: hsl(263 12% 66%);
-    --accent: hsl(266 16% 16%);
-    --accent-foreground: hsl(0 0% 98%);
-    --destructive: hsl(0 84% 60%);
-    --destructive-foreground: hsl(0 0% 98%);
-    --border: hsl(266 14% 18%);
-    --input: hsl(266 14% 18%);
-    --ring: hsl(270 80% 62%);
-    --brand-highlight: hsl(272 90% 74%);
-    --brand-highlight-soft: hsl(272 92% 88%);
-    --brand-surface: hsl(266 18% 13%);
-    --brand-surface-strong: hsl(266 18% 17%);
-    --brand-ink: hsl(266 24% 6%);
-    --brand-ink-foreground: hsl(0 0% 100%);
-    --success: hsl(145 55% 48%);
-    --success-foreground: hsl(0 0% 100%);
-    --chart-1: hsl(270 80% 62%);
-    --chart-2: hsl(272 90% 74%);
-    --chart-3: hsl(285 60% 58%);
-    --chart-4: hsl(43 74% 66%);
-    --chart-5: hsl(145 55% 48%);
-    --sidebar-background: hsl(0 0% 7%);
-    --sidebar-foreground: hsl(0 0% 95.9%);
-    --sidebar-primary: hsl(360, 100%, 100%);
-    --sidebar-primary-foreground: hsl(0 0% 100%);
-    --sidebar-accent: hsl(0 0% 15.9%);
-    --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
-    --sidebar-border: hsl(0 0% 15.9%);
-    --sidebar-ring: hsl(217.2 91.2% 59.8%);
-    --sidebar: hsl(240 5.9% 10%);
+    --background: oklch(0.17 0.02 310);
+    --foreground: oklch(0.97 0.005 285);
+    --card: oklch(0.21 0.025 312);
+    --card-foreground: oklch(0.97 0.005 285);
+    --popover: oklch(0.21 0.025 312);
+    --popover-foreground: oklch(0.97 0.005 285);
+    --primary: oklch(0.58 0.2 322);
+    --primary-foreground: oklch(0.99 0.005 322);
+    --secondary: oklch(0.27 0.03 312);
+    --secondary-foreground: oklch(0.97 0.005 285);
+    --muted: oklch(0.26 0.025 312);
+    --muted-foreground: oklch(0.7 0.02 300);
+    --accent: oklch(0.27 0.03 312);
+    --accent-foreground: oklch(0.97 0.005 285);
+    --destructive: oklch(0.62 0.19 25);
+    --destructive-foreground: oklch(1 0 0);
+    --border: oklch(0.28 0.025 312);
+    --input: oklch(0.28 0.025 312);
+    --ring: oklch(0.64 0.16 155);
+
+    --brand-ink: oklch(0.31 0.14 322);
+    --brand-ink-foreground: oklch(0.97 0.02 322);
+    --brand-ink-hover: oklch(0.38 0.16 322);
+    --brand-ink-muted: oklch(0.86 0.05 322);
+    --brand-ink-soft: oklch(0.8 0.06 322);
+    --brand-ink-surface: oklch(0.3 0.08 322);
+    --brand-ink-surface-foreground: oklch(0.88 0.07 322);
+
+    --brand-highlight: oklch(0.66 0.2 322);
+    --brand-highlight-soft: oklch(0.86 0.1 322);
+
+    --brand-accent: oklch(0.64 0.16 155);
+    --brand-accent-hover: oklch(0.71 0.17 152);
+    --brand-accent-strong: oklch(0.58 0.16 155);
+    --brand-accent-foreground: oklch(0.16 0.03 155);
+    --brand-accent-ink: oklch(0.78 0.14 155);
+    --brand-accent-ink-strong: oklch(0.9 0.08 155);
+    --brand-accent-surface: oklch(0.28 0.06 155);
+    --brand-accent-surface-hover: oklch(0.33 0.07 155);
+    --brand-accent-surface-faint: oklch(0.24 0.04 155);
+    --brand-accent-border: oklch(0.36 0.07 155);
+    --brand-accent-on-ink: oklch(0.84 0.11 155);
+
+    --brand-sale: oklch(0.64 0.19 25);
+    --brand-sale-bright: oklch(0.76 0.18 35);
+    --brand-star: oklch(0.76 0.14 75);
+
+    --brand-surface: oklch(0.24 0.025 312);
+    --brand-surface-strong: oklch(0.28 0.03 312);
+
+    --success: oklch(0.64 0.16 155);
+    --success-foreground: oklch(0.16 0.03 155);
+
+    --chart-1: oklch(0.58 0.2 322);
+    --chart-2: oklch(0.66 0.2 322);
+    --chart-3: oklch(0.64 0.16 155);
+    --chart-4: oklch(0.76 0.14 75);
+    --chart-5: oklch(0.64 0.19 25);
+    --sidebar-background: oklch(0.15 0.02 310);
+    --sidebar-foreground: oklch(0.96 0.005 285);
+    --sidebar-primary: oklch(0.58 0.2 322);
+    --sidebar-primary-foreground: oklch(0.99 0.005 322);
+    --sidebar-accent: oklch(0.25 0.03 312);
+    --sidebar-accent-foreground: oklch(0.96 0.005 285);
+    --sidebar-border: oklch(0.25 0.03 312);
+    --sidebar-ring: oklch(0.64 0.16 155);
+    --sidebar: oklch(0.19 0.02 310);
 }
 
 @layer base {

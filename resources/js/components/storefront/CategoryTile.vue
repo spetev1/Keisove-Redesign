@@ -1,74 +1,90 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { ArrowRight } from '@lucide/vue';
 import { computed } from 'vue';
 import type { StorefrontCategory } from '@/types';
 
 type Props = {
     category: StorefrontCategory;
-    ctaLabel: string;
-    href?: string;
+    href: string;
+    /**
+     * One tile in the row is filled with the brand violet. It is what stops a
+     * row of identical white tiles reading as a table, and it goes to whichever
+     * department the page is leading on.
+     */
+    isFeatured?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
-    href: '#',
+    isFeatured: false,
 });
 
 /**
- * `#` marks a destination the demo does not build yet; routing that through
- * Inertia would fire a visit at the current page.
+ * The genuine count from the database. Bulgarian takes the plural from two up,
+ * so a department down to its last product still reads correctly.
  */
-const cardComponent = computed(() => (props.href === '#' ? 'a' : Link));
+const countLabel = computed(() => {
+    const count = props.category.productCount;
+
+    if (count === undefined) {
+        return props.category.tagline ?? '';
+    }
+
+    return count === 1 ? '1 продукт' : `${count} продукта`;
+});
 </script>
 
 <template>
     <!--
-        The photograph is the card rather than something framed inside it, so
-        the copy is laid over the picture and the whole tile is the link. That
-        rules out a button for the call to action - an anchor nested in an
-        anchor - so it is a span the card's own hover drives instead.
+        The link is the tile's fixed footprint and the card inside it is what
+        lifts. Putting the lift on the link itself made it flicker: hovering the
+        bottom edge raised the element out from under the pointer, which ended
+        the hover, which dropped it back under the pointer, over and over. The
+        hover target has to hold still for the hover to be stable, so only its
+        contents move.
     -->
-    <component
-        :is="cardComponent"
+    <Link
         :href="href"
-        class="group relative flex aspect-[4/3] items-end overflow-hidden rounded-2xl bg-brand-surface"
+        class="group block h-full rounded-[18px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
     >
-        <img
-            v-if="category.imageUrl"
-            :src="category.imageUrl"
-            :alt="category.name"
-            loading="lazy"
-            class="absolute inset-0 size-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 motion-reduce:transition-none"
-        />
-
-        <!--
-            Department photography is shot light, and the copy over it is white,
-            so the foot of the card is carried down far enough to hold a line of
-            text while the top of the picture is left alone.
-        -->
-        <div
-            class="absolute inset-0 bg-gradient-to-t from-brand-ink/90 via-brand-ink/45 via-45% to-transparent to-75%"
-            aria-hidden="true"
-        />
-
-        <div class="relative w-full p-6">
-            <h2 class="text-xl font-bold text-white sm:text-2xl">
-                {{ category.name }}
-            </h2>
-            <p
-                v-if="category.tagline"
-                class="mt-1 max-w-[18rem] text-sm text-white/70"
-            >
-                {{ category.tagline }}
-            </p>
+        <span
+            :class="[
+                'flex h-full min-h-[150px] flex-col justify-between gap-3.5 rounded-[18px] border p-4.5 transition-[transform,border-color,background-color] duration-300 ease-out group-hover:-translate-y-0.5 motion-reduce:transition-none',
+                props.isFeatured
+                    ? 'border-brand-ink bg-brand-ink text-brand-ink-foreground group-hover:bg-brand-ink-hover'
+                    : 'border-border bg-card group-hover:border-brand-accent',
+            ]"
+        >
             <span
-                class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-white"
+                :class="[
+                    'block size-13 overflow-hidden rounded-[14px]',
+                    props.isFeatured ? 'bg-white/15' : 'bg-brand-surface',
+                ]"
             >
-                {{ ctaLabel }}
-                <ArrowRight
-                    class="size-4 transition-transform duration-300 ease-out group-hover:translate-x-1 motion-reduce:transition-none"
+                <img
+                    v-if="category.imageUrl"
+                    :src="category.imageUrl"
+                    alt=""
+                    aria-hidden="true"
+                    loading="lazy"
+                    class="size-full object-cover"
                 />
             </span>
-        </div>
-    </component>
+
+            <span>
+                <b class="block text-[15px] tracking-tight">
+                    {{ category.name }}
+                </b>
+                <span
+                    :class="[
+                        'text-[13px]',
+                        props.isFeatured
+                            ? 'text-brand-ink-soft'
+                            : 'text-muted-foreground',
+                    ]"
+                >
+                    {{ countLabel }}
+                </span>
+            </span>
+        </span>
+    </Link>
 </template>

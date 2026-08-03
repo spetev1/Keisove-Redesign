@@ -9,11 +9,13 @@ type Props = {
 const props = defineProps<Props>();
 
 /**
- * `#` marks a destination the demo does not build yet. Routing those through
- * Inertia would fire a visit at the current page, so they stay plain anchors
- * and every real destination gets a client-side visit.
+ * `#` marks a destination the demo does not build yet, and a link carrying a
+ * hash is asking the browser to move to a section rather than to fetch a page.
+ * Routing either through Inertia would fire a visit that lands back where it
+ * started, so both stay plain anchors and every real page gets a client-side
+ * visit.
  */
-const isPlaceholder = computed(() => props.href === '#');
+const isPlaceholder = computed(() => props.href.includes('#'));
 </script>
 
 <template>

@@ -13,6 +13,7 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
+import { categoryHref } from '@/lib/storefrontNav';
 import { home } from '@/routes';
 import type {
     CategoryFilterState,
@@ -74,13 +75,24 @@ const activeFilterCount = computed(() => {
 
     <StorefrontContainer class="py-6 sm:py-8">
         <nav
-            class="flex items-center gap-2 text-xs text-muted-foreground"
+            class="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"
             aria-label="Навигация"
         >
             <Link :href="home()" class="transition-colors hover:text-primary">
                 Начало
             </Link>
             <span aria-hidden="true">/</span>
+            <!-- A child names its department on the way past, so there is a step
+                 back up rather than only a jump to the top. -->
+            <template v-if="category.parent">
+                <Link
+                    :href="categoryHref(category.parent.slug)"
+                    class="transition-colors hover:text-primary"
+                >
+                    {{ category.parent.name }}
+                </Link>
+                <span aria-hidden="true">/</span>
+            </template>
             <span class="text-foreground">{{ category.name }}</span>
         </nav>
 
@@ -94,6 +106,32 @@ const activeFilterCount = computed(() => {
             >
                 {{ category.tagline }}
             </p>
+
+            <!--
+                A department's children, as chips. This is the only way into a
+                subcategory: the header's nav row carries departments alone,
+                because eleven of them plus their children would be a menu
+                rather than a row.
+            -->
+            <ul
+                v-if="category.children?.length"
+                class="mt-5 flex flex-wrap gap-2"
+            >
+                <li v-for="child in category.children" :key="child.slug">
+                    <Link
+                        :href="categoryHref(child.slug)"
+                        class="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold transition-colors hover:border-brand-accent hover:text-brand-accent-ink"
+                    >
+                        {{ child.name }}
+                        <span
+                            v-if="child.productCount !== undefined"
+                            class="text-xs font-medium text-muted-foreground"
+                        >
+                            {{ child.productCount }}
+                        </span>
+                    </Link>
+                </li>
+            </ul>
         </header>
 
         <div class="lg:grid lg:grid-cols-[15rem_1fr] lg:items-start lg:gap-10">

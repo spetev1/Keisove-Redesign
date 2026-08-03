@@ -30,8 +30,22 @@ class ProductResource extends JsonResource
             'compareAtPrice' => $this->isDiscounted()
                 ? Price::format($this->compare_at_price_in_stotinki)
                 : null,
+            /*
+             * Both prices are carried in euro as well, because the card prints
+             * the pair on one line under the lev figures during changeover.
+             */
+            'priceInEur' => Price::formatEur($this->price_in_stotinki),
+            'compareAtPriceInEur' => $this->isDiscounted()
+                ? Price::formatEur($this->compare_at_price_in_stotinki)
+                : null,
             'discountPercentage' => $this->discountPercentage(),
             'isNew' => $this->is_new,
+            /*
+             * The card's eyebrow. Named rather than sent as the raw slug so the
+             * label the filters print and the label the card prints cannot
+             * drift apart.
+             */
+            'deviceFamilyLabel' => $this->device_family?->label(),
             'categorySlug' => $this->whenLoaded(
                 'category',
                 fn () => $this->category->slug,
